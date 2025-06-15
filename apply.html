@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply to Broken Promises</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    body {
+      min-height: 100vh;
+      margin: 0;
+      font-family: 'Inter', Arial, sans-serif;
+      background: #070707;
+      position: relative;
+      overflow-x: hidden;
+    }
+    .bg-img {
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      object-fit: cover;
+      z-index: 0;
+      filter: blur(8px) brightness(0.7);
+    }
+    .form-container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 8px;
+    }
+    .form-card {
+      background: rgba(24,24,24,0.85);
+      border-radius: 18px;
+      box-shadow: 0 8px 32px #000a, 0 2px 12px #0005;
+      padding: 40px 32px 32px 32px;
+      max-width: 420px;
+      width: 100%;
+      backdrop-filter: blur(6px) saturate(1.2);
+      border: 1.5px solid rgba(255,255,255,0.08);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+    }
+    .form-title {
+      color: #ffb84d;
+      font-size: 2rem;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 8px;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+    }
+    .form-desc {
+      color: #ccc;
+      font-size: 1.05rem;
+      text-align: center;
+      margin-bottom: 28px;
+    }
+    .form-group {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+      margin-bottom: 18px;
+    }
+    .form-group input,
+    .form-group textarea {
+      background: rgba(34,34,34,0.95);
+      color: #fff;
+      border: 1.5px solid #222;
+      border-radius: 8px;
+      padding: 13px 16px;
+      font-size: 1rem;
+      font-family: inherit;
+      outline: none;
+      transition: border 0.2s, box-shadow 0.2s;
+      box-shadow: 0 1px 4px #0002;
+      resize: none;
+    }
+    .form-group input:focus,
+    .form-group textarea:focus {
+      border: 1.5px solid #ffb84d;
+      box-shadow: 0 2px 8px #ffb84d33;
+    }
+    .form-group textarea {
+      min-height: 80px;
+      max-height: 180px;
+    }
+    .cta-btn {
+      padding: 16px 0;
+      font-size: 1.15rem;
+      font-weight: 900;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #ffb84d, #ffb300);
+      color: #111;
+      border: none;
+      cursor: pointer;
+      box-shadow: 0 2px 16px #000a;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      transition: all 0.2s;
+      margin-top: 8px;
+      width: 100%;
+    }
+    .cta-btn:hover {
+      filter: brightness(1.1);
+      transform: scale(1.03);
+    }
+    #apply-success {
+      display: none;
+      margin: 32px 0;
+      text-align: center;
+      width: 100%;
+    }
+    .success-card {
+      border: 2.5px solid #ffb84d;
+      border-radius: 16px;
+      background: rgba(24,24,24,0.95);
+      box-shadow: 0 4px 24px #000a;
+      padding: 36px 24px 28px 24px;
+      max-width: 420px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 18px;
+    }
+    .success-title {
+      font-size: 1.5rem;
+      font-weight: 900;
+      color: #ffb84d;
+      margin-bottom: 8px;
+    }
+    .success-message {
+      color: #fff;
+      font-size: 1.08rem;
+      line-height: 1.6;
+      text-align: center;
+    }
+    @media (max-width: 600px) {
+      .form-card { padding: 24px 6px; }
+      .success-card { padding: 24px 6px; }
+      .form-title { font-size: 1.3rem; }
+      .success-title { font-size: 1.1rem; }
+    }
+  </style>
+</head>
+<body>
+  <img src="/images/hero-bg.jpg" alt="Background" class="bg-img">
+  <div class="form-container">
+    <form id="guild-apply-form" class="form-card" onsubmit="return submitForm(event)">
+      <div class="form-title">Apply to Join</div>
+      <div class="form-desc">Fill out the form below and our officers will contact you via Discord.</div>
+      <div class="form-group">
+        <input required name="character" placeholder="Character Name" />
+        <label style="color:#ffb84d;font-weight:700;margin-bottom:4px;display:block;">What is your main class?</label>
+        <div id="class-icon-row" style="display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; transition: opacity 0.4s;"></div>
+        <div id="spec-back-row" style="display:none; justify-content: center; margin-bottom: 4px;"></div>
+        <div id="spec-icon-row" style="display:none; flex-wrap: wrap; gap: 8px; justify-content: center; margin-bottom: 10px; transition: opacity 0.4s;"></div>
+        <input required name="spec" placeholder="Spec" style="display:none;" />
+        <input required name="battletag" placeholder="Battle.net Tag" />
+        <input required name="discord" placeholder="Discord Tag" />
+        <input name="raiderio" placeholder="Link your raider.io" />
+        <input required name="logs" placeholder="Warcraft Logs Link" />
+        <input name="prevLogs" placeholder="Previous Season Logs Link (Optional)" />
+        <textarea required name="prevGuilds" placeholder="What guilds were you in previously, and why did you choose to leave?"></textarea>
+        <textarea required name="goals" placeholder="What are your goals in the game, and what expectations do you have from our guild?"></textarea>
+        <textarea required name="why" placeholder="Why do you want to join?"></textarea>
+      </div>
+      <button type="submit" class="cta-btn">Submit Application</button>
+    </form>
+    <div id="apply-success">
+      <div class="success-card">
+        <div class="success-title">Application Submitted!</div>
+        <div class="success-message">
+          Thank you for applying to Broken Promises!<br>
+          Our officers will review your application and get back to you on Discord within a few days if we are interested.<br>
+          We appreciate your interest and taking the time fill out this form.
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.getElementById('apply-success').style.display = 'none';
+    function submitForm(e) {
+      e.preventDefault();
+      const form = e.target;
+      const data = {
+        "Character Name": form.character.value,
+        "Class": selectedClass ? selectedClass : '(Not selected)',
+        "Spec": selectedSpecs.length ? selectedSpecs.join(', ') : form.spec.value,
+        "Battle.net Tag": form.battletag.value,
+        "Discord Tag": form.discord.value,
+        "Raider.io": form.raiderio.value,
+        "Warcraft Logs": form.logs.value,
+        "Previous Season Logs": form.prevLogs.value,
+        "Previous Guilds": form.prevGuilds.value,
+        "Goals and Expectations": form.goals.value,
+        "Why Join": form.why.value
+      };
+      let content = "<@&739216279411621925>\n**New Guild Application**\n";
+      for (const [key, value] of Object.entries(data)) {
+        if (value) content += `**${key}:** ${value}\n`;
+      }
+      fetch("https://discord.com/api/webhooks/1383766508462932038/2LGvpC4vx9_AlHA7ca-d_DdLySEN-2vgeViGIaRqfKAkrVbvGBtM3XBO0Oxnb7UheYfn", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ content })
+      }).then(() => {
+        document.getElementById('guild-apply-form').style.display = 'none';
+        document.getElementById('apply-success').style.display = 'flex';
+      }).catch(() => {
+        alert("There was an error submitting your application. Please try again later.");
+      });
+      return false;
+    }
+    function getClassDisplayName(filename) {
+      // Map filename to display name
+      const map = {
+        'deathknight': 'Death Knight',
+        'demonhunter': 'Demon Hunter',
+        'druid': 'Druid',
+        'evoker': 'Evoker',
+        'hunter': 'Hunter',
+        'mage': 'Mage',
+        'monk': 'Monk',
+        'paladin': 'Paladin',
+        'priest': 'Priest',
+        'rogue': 'Rogue',
+        'shaman': 'Shaman',
+        'warlock': 'Warlock',
+        'warrior': 'Warrior'
+      };
+      return map[filename] || filename;
+    }
+    // Dynamically add class icons
+    const classIcons = [
+      'deathknight.jpg', 'demonhunter.jpg', 'druid.jpg', 'evoker.jpg', 'hunter.jpg', 'mage.jpg', 'monk.jpg', 'paladin.jpg', 'priest.jpg', 'rogue.jpg', 'shaman.jpg', 'warlock.jpg', 'warrior.jpg'
+    ];
+    let selectedClass = null;
+    let selectedSpecs = [];
+    const row = document.getElementById('class-icon-row');
+    const specRow = document.getElementById('spec-icon-row');
+    const specInput = document.querySelector('input[name="spec"]');
+    const specBackRow = document.getElementById('spec-back-row');
+    // Map class icon to specs
+    const classSpecs = {
+      'deathknight.jpg': [
+        {file: 'deathknight_blood.jpg', label: 'Blood'},
+        {file: 'deathknight_frost.jpg', label: 'Frost'},
+        {file: 'deathknight_unholy.jpg', label: 'Unholy'}
+      ],
+      'demonhunter.jpg': [
+        {file: 'demonhunter_havoc.jpg', label: 'Havoc'},
+        {file: 'demonhunter_vengeance.jpg', label: 'Vengeance'}
+      ],
+      'druid.jpg': [
+        {file: 'druid_balance.jpg', label: 'Balance'},
+        {file: 'druid_feral.jpg', label: 'Feral'},
+        {file: 'druid_guardian.jpg', label: 'Guardian'},
+        {file: 'druid_restoration.jpg', label: 'Restoration'}
+      ],
+      'evoker.jpg': [
+        {file: 'evoker_devastation.jpg', label: 'Devastation'},
+        {file: 'evoker_preservation.jpg', label: 'Preservation'},
+        {file: 'evoker_augmentation.jpg', label: 'Augmentation'}
+      ],
+      'hunter.jpg': [
+        {file: 'hunter_beastmastery.jpg', label: 'Beast Mastery'},
+        {file: 'hunter_marksmanship.jpg', label: 'Marksmanship'},
+        {file: 'hunter_survival.jpg', label: 'Survival'}
+      ],
+      'mage.jpg': [
+        {file: 'mage_arcane.jpg', label: 'Arcane'},
+        {file: 'mage_fire.jpg', label: 'Fire'},
+        {file: 'mage_frost.jpg', label: 'Frost'}
+      ],
+      'monk.jpg': [
+        {file: 'monk_brewmaster.jpg', label: 'Brewmaster'},
+        {file: 'monk_mistweaver.jpg', label: 'Mistweaver'},
+        {file: 'monk_windwalker.jpg', label: 'Windwalker'}
+      ],
+      'paladin.jpg': [
+        {file: 'paladin_holy.jpg', label: 'Holy'},
+        {file: 'paladin_protection.jpg', label: 'Protection'},
+        {file: 'paladin_retribution.jpg', label: 'Retribution'}
+      ],
+      'priest.jpg': [
+        {file: 'priest_discipline.jpg', label: 'Discipline'},
+        {file: 'priest_holy.jpg', label: 'Holy'},
+        {file: 'priest_shadow.jpg', label: 'Shadow'}
+      ],
+      'rogue.jpg': [
+        {file: 'rogue_assassination.jpg', label: 'Assassination'},
+        {file: 'rogue_outlaw.jpg', label: 'Outlaw'},
+        {file: 'rogue_subtlety.jpg', label: 'Subtlety'}
+      ],
+      'shaman.jpg': [
+        {file: 'shaman_elemental.jpg', label: 'Elemental'},
+        {file: 'shaman_enhancement.jpg', label: 'Enhancement'},
+        {file: 'shaman_restoration.jpg', label: 'Restoration'}
+      ],
+      'warlock.jpg': [
+        {file: 'warlock_affliction.jpg', label: 'Affliction'},
+        {file: 'warlock_demonology.jpg', label: 'Demonology'},
+        {file: 'warlock_destruction.jpg', label: 'Destruction'}
+      ],
+      'warrior.jpg': [
+        {file: 'warrior_arms.jpg', label: 'Arms'},
+        {file: 'warrior_fury.jpg', label: 'Fury'},
+        {file: 'warrior_protection.jpg', label: 'Protection'}
+      ]
+    };
+    classIcons.forEach(icon => {
+      const btn = document.createElement('img');
+      btn.src = `/images/classicons/${icon}`;
+      btn.alt = icon.split('.')[0];
+      btn.title = getClassDisplayName(icon.replace('.jpg',''));
+      btn.style.width = '38px';
+      btn.style.height = '38px';
+      btn.style.borderRadius = '8px';
+      btn.style.cursor = 'pointer';
+      btn.style.border = '2px solid transparent';
+      btn.style.transition = 'transform 0.4s, opacity 0.4s';
+      btn.onclick = function() {
+        if (classSpecs[icon]) {
+          // Animate out all class icons
+          Array.from(row.children).forEach((child, i) => {
+            setTimeout(() => { child.style.opacity = '0'; child.style.transform = 'scale(0.7)'; }, i * 30);
+          });
+          setTimeout(() => {
+            row.style.display = 'none';
+            // Show back button
+            specBackRow.innerHTML = '';
+            const backBtn = document.createElement('button');
+            backBtn.type = 'button';
+            backBtn.textContent = '← Back to classes';
+            backBtn.style.background = 'none';
+            backBtn.style.color = '#ffb84d';
+            backBtn.style.fontWeight = '700';
+            backBtn.style.fontSize = '1rem';
+            backBtn.style.border = 'none';
+            backBtn.style.cursor = 'pointer';
+            backBtn.style.marginBottom = '6px';
+            backBtn.onclick = function() {
+              specRow.style.display = 'none';
+              specBackRow.style.display = 'none';
+              row.style.display = 'flex';
+              Array.from(row.children).forEach(child => { child.style.opacity = '1'; child.style.transform = 'scale(1)'; });
+              selectedClass = null;
+              selectedSpecs = [];
+              specInput.value = '';
+              specInput.style.display = 'none';
+            };
+            specBackRow.appendChild(backBtn);
+            specBackRow.style.display = 'flex';
+            // Show spec icons for this class
+            specRow.innerHTML = '';
+            // Get folder name for specs (e.g. deathknight_specs)
+            const folder = icon.replace('.jpg','') + '_specs';
+            classSpecs[icon].forEach(spec => {
+              const specBtn = document.createElement('img');
+              specBtn.src = `/images/classicons/${folder}/${spec.file}`;
+              specBtn.alt = spec.label;
+              specBtn.title = spec.label;
+              specBtn.style.width = '48px';
+              specBtn.style.height = '48px';
+              specBtn.style.borderRadius = '8px';
+              specBtn.style.cursor = 'pointer';
+              specBtn.style.border = '2px solid transparent';
+              specBtn.onclick = function() {
+                selectedClass = getClassDisplayName(icon.replace('.jpg',''));
+                const idx = selectedSpecs.indexOf(spec.label);
+                if (idx === -1) {
+                  selectedSpecs.push(spec.label);
+                  specBtn.style.border = '2px solid #ffb84d';
+                } else {
+                  selectedSpecs.splice(idx, 1);
+                  specBtn.style.border = '2px solid transparent';
+                }
+                specInput.value = selectedSpecs.join(', ');
+              };
+              specRow.appendChild(specBtn);
+            });
+            specRow.style.display = 'flex';
+            specInput.style.display = '';
+          }, 400);
+        } else {
+          selectedClass = getClassDisplayName(icon.replace('.jpg',''));
+          selectedSpecs = [];
+          // Remove highlight from all
+          Array.from(row.children).forEach(child => child.style.border = '2px solid transparent');
+          btn.style.border = '2px solid #ffb84d';
+          specRow.style.display = 'none';
+          specInput.style.display = '';
+          specInput.value = '';
+        }
+      };
+      row.appendChild(btn);
+    });
+  </script>
+</body>
+</html> 

@@ -1,0 +1,491 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Broken Promises Guild</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --gold: #ffb84d;
+      --gold2: #ffb300;
+      --bg: #070707;
+      --card-bg: #181818;
+      --border: #181818;
+      --white: #fff;
+      --gray: #ccc;
+    }
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--white);
+      font-family: 'Inter', Arial, sans-serif;
+      min-height: 100vh;
+    }
+    a { color: var(--gold); text-decoration: none; }
+    .nav {
+      position: fixed; top: 0; left: 0; width: 100%; z-index: 100;
+      background: transparent;
+      transition: background 0.3s cubic-bezier(.4,0,.2,1), box-shadow 0.3s cubic-bezier(.4,0,.2,1);
+      box-shadow: none;
+      display: flex; justify-content: center; align-items: center;
+      height: 70px;
+      padding: 0;
+    }
+    .nav.scrolled {
+      background: #111;
+      box-shadow: 0 2px 12px #000a;
+    }
+    .nav-logo {
+      position: absolute;
+      left: 48px;
+      display: flex; align-items: center; gap: 12px;
+    }
+    .hamburger {
+      display: none;
+      position: absolute;
+      right: 24px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 30px;
+      height: 24px;
+      cursor: pointer;
+      z-index: 101;
+    }
+    .hamburger span {
+      display: block;
+      position: absolute;
+      height: 3px;
+      width: 100%;
+      background: var(--white);
+      border-radius: 3px;
+      transition: all 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .hamburger span:nth-child(1) { top: 0; }
+    .hamburger span:nth-child(2) { top: 50%; transform: translateY(-50%); }
+    .hamburger span:nth-child(3) { bottom: 0; }
+    .hamburger.active span:nth-child(1) {
+      transform: translateY(10px) rotate(45deg);
+    }
+    .hamburger.active span:nth-child(2) {
+      opacity: 0;
+    }
+    .hamburger.active span:nth-child(3) {
+      transform: translateY(-10px) rotate(-45deg);
+    }
+    .nav-logo img { width: 36px; height: 36px; border-radius: 50%; }
+    .nav-logo span {
+      font-size: 1.3rem; font-weight: 900; letter-spacing: 2px; color: var(--white);
+    }
+    .nav-links {
+      display: flex; gap: 40px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px;
+      justify-content: center;
+      width: 100%;
+    }
+    .nav-links a {
+      position: relative;
+      color: var(--white);
+      padding: 8px 24px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      overflow: hidden;
+    }
+    .nav-links a::after {
+      content: "";
+      display: block;
+      position: absolute;
+      left: 50%;
+      bottom: 0;
+      width: 0;
+      height: 3px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2));
+      transition: width 0.3s cubic-bezier(.4,0,.2,1), left 0.3s cubic-bezier(.4,0,.2,1);
+    }
+    .nav-links a:hover::after {
+      width: 100%;
+      left: 0;
+    }
+    .hero {
+      position: relative; min-height: 70vh; display: flex; align-items: center; padding-top: 70px;
+      background: #070707;
+      overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0; z-index: 0;
+      width: 100%; height: 100%; object-fit: cover; filter: brightness(0.7);
+    }
+    .hero-overlay {
+      position: absolute; inset: 0; z-index: 1;
+      background: linear-gradient(to bottom, #000c 80%, #070707 100%);
+    }
+    .hero-content {
+      position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center;
+      max-width: 600px; margin-left: 0; margin-right: 0; margin: 0 auto;
+    }
+    .hero-logo {
+      width: 96px; height: 96px; border-radius: 50%; border: 2px solid #b8860b; background: #111a; margin-bottom: 24px;
+      box-shadow: 0 2px 16px #000a;
+    }
+    .hero-cta {
+      font-size: 2.5rem; font-weight: 900; margin-bottom: 24px; color: var(--white); text-shadow: 0 2px 8px #000a;
+    }
+    .hero-btn {
+      padding: 18px 48px; font-size: 1.2rem; font-weight: 900; border-radius: 8px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2)); color: #111;
+      border: none; cursor: pointer; box-shadow: 0 2px 16px #000a;
+      text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s;
+    }
+    .hero-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+    main { margin-top: 0; }
+    .section { max-width: 900px; margin: 64px auto 0 auto; padding: 0 24px; }
+    .section-title {
+      display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+    }
+    .section-title-line {
+      width: 6px; height: 40px; background: var(--gold); border-radius: 4px;
+    }
+    .section-title-text {
+      font-size: 2rem; font-weight: 900; color: var(--gold); text-transform: uppercase; letter-spacing: 2px;
+    }
+    .section-content { font-size: 1.1rem; color: var(--white); line-height: 1.7; margin-bottom: 24px; }
+    .card-list { display: flex; flex-direction: column; gap: 32px; }
+    .card {
+      background: transparent; border: 1px solid var(--border); border-radius: 10px; padding: 32px; color: var(--white);
+      margin-bottom: 0; box-shadow: none;
+    }
+    .card-title { color: var(--gold); font-weight: 900; font-size: 1.2rem; margin-bottom: 8px; text-transform: uppercase; }
+    .card-content { color: var(--white); font-size: 1rem; }
+    .schedule-row {
+      display: flex; gap: 24px; margin-top: 24px; flex-wrap: wrap;
+    }
+    .schedule-card {
+      flex: 1 1 220px; min-width: 200px; background: var(--card-bg); border-left: 5px solid var(--gold); border-radius: 8px;
+      padding: 20px 28px; margin-bottom: 0; box-shadow: 0 2px 8px #0003; transition: all 0.2s;
+    }
+    .schedule-card:hover { border-color: var(--gold2); transform: translateY(-4px) scale(1.03); }
+    .schedule-day { color: var(--gold); font-weight: 900; font-size: 1.1rem; margin-bottom: 4px; }
+    .schedule-time { color: var(--white); font-size: 1rem; }
+    .schedule-note { color: #aaa; font-size: 0.9rem; margin-top: 4px; }
+    .ranking-section { margin-top: 64px; }
+    .ranking-title { text-align: center; color: var(--gold); font-size: 2.2rem; font-weight: 900; margin-bottom: 32px; text-transform: uppercase; letter-spacing: 2px; }
+    .ranking-grid {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 32px; max-width: 900px; margin: 0 auto;
+    }
+    .ranking-card {
+      position: relative; min-height: 110px; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 12px #0005;
+      border: 1px solid var(--border); background: var(--card-bg);
+      display: flex; align-items: center; padding: 0;
+      transition: transform 0.25s cubic-bezier(.4,0,.2,1), box-shadow 0.25s cubic-bezier(.4,0,.2,1);
+      cursor: pointer;
+    }
+    .ranking-card:hover {
+      transform: translateY(-8px) scale(1.03);
+      box-shadow: 0 8px 32px #000a, 0 2px 12px #0005;
+    }
+    .ranking-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: brightness(0.6);
+      transition: filter 0.25s cubic-bezier(.4,0,.2,1), transform 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .ranking-card:hover .ranking-bg {
+      filter: brightness(0.85) blur(1px);
+      transform: scale(1.05);
+    }
+    .ranking-overlay { position: absolute; inset: 0; background: #0007; z-index: 1; transition: background 0.25s cubic-bezier(.4,0,.2,1); }
+    .ranking-card:hover .ranking-overlay {
+      background: #000c;
+    }
+    .ranking-content {
+      position: relative; z-index: 2; padding: 32px 32px; width: 100%; transition: color 0.25s cubic-bezier(.4,0,.2,1);
+    }
+    .ranking-card:hover .ranking-content {
+      color: var(--gold);
+    }
+    .ranking-raid { color: var(--white); font-weight: 900; font-size: 1.2rem; margin-bottom: 6px; }
+    .ranking-rank { color: var(--gold); font-weight: 700; font-size: 1rem; }
+    .requirements-list {
+      display: flex; flex-direction: column; gap: 18px; margin-top: 24px;
+    }
+    .requirements-item {
+      display: flex; align-items: flex-start; gap: 12px; font-size: 1.1rem;
+    }
+    .requirements-icon {
+      color: var(--gold); font-size: 1.3rem; margin-top: 2px;
+    }
+    .cta-section {
+      position: relative; min-height: 320px; display: flex; align-items: center; justify-content: center; overflow: hidden; margin-top: 64px;
+    }
+    .cta-bg {
+      position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0; filter: brightness(0.6);
+    }
+    .cta-overlay { position: absolute; inset: 0; background: #000a; z-index: 1; }
+    .cta-content {
+      position: relative; z-index: 2; display: flex; flex-direction: column; align-items: center; gap: 24px;
+    }
+    .cta-title {
+      color: var(--gold); font-size: 2rem; font-weight: 900; text-transform: uppercase; letter-spacing: 2px; text-align: center;
+    }
+    .cta-btn {
+      padding: 18px 48px; font-size: 1.2rem; font-weight: 900; border-radius: 8px;
+      background: linear-gradient(90deg, var(--gold), var(--gold2)); color: #111;
+      border: none; cursor: pointer; box-shadow: 0 2px 16px #000a;
+      text-transform: uppercase; letter-spacing: 2px; transition: all 0.2s;
+    }
+    .cta-btn:hover { filter: brightness(1.1); transform: scale(1.05); }
+    @media (max-width: 900px) {
+      .section, .ranking-grid { max-width: 100%; }
+      .ranking-grid { grid-template-columns: 1fr; }
+      .hero-content { margin-left: 24px; }
+    }
+    @media (max-width: 600px) {
+      .nav {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-start;
+        padding: 0 0 0 8px;
+        position: relative;
+      }
+      .hamburger {
+        display: block;
+        position: relative;
+        left: 0;
+        top: 0;
+        margin: 0;
+        width: 30px;
+        height: 24px;
+        z-index: 101;
+      }
+      .nav-logo {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+        margin: 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: max-content;
+      }
+      .nav-links {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 100%;
+        height: 100vh;
+        background: #111;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        transition: right 0.3s cubic-bezier(.4,0,.2,1);
+        padding: 0;
+      }
+      .nav-links.active {
+        right: 0;
+      }
+      .nav-links a {
+        font-size: 1.2rem;
+        padding: 16px 24px;
+      }
+      .hero-content {
+        align-items: center !important;
+        margin: 0 auto !important;
+        width: 100%;
+      }
+      .hero-logo {
+        display: block;
+        margin: 0 auto;
+      }
+      .section { padding: 0 8px; }
+      .card { padding: 16px; }
+      .ranking-content { padding: 16px; }
+      .cta-content { padding: 0 8px; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Navbar -->
+  <nav class="nav">
+    <div class="hamburger">
+      <span></span>
+      <span></span>
+      <span></span>
+    </div>
+    <div class="nav-logo">
+      <img src="/images/guild-logo.png" alt="Guild Logo">
+      <span>Broken Promises</span>
+    </div>
+    <div class="nav-links">
+      <a href="#">Home</a>
+      <a href="apply.html" target="_blank">Apply</a>
+    </div>
+  </nav>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <img src="/images/hero-bg.jpg" alt="Hero Background" class="hero-bg">
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <img src="/images/guild-logo.png" alt="Guild Logo" class="hero-logo">
+    </div>
+  </section>
+
+  <!-- About Us Section -->
+  <section class="section">
+    <div class="section-title">
+      <div class="section-title-line"></div>
+      <div class="section-title-text">Who We Are</div>
+    </div>
+    <div class="section-content">
+      Broken Promises (Rebrand of The Iron Throne due to name change) is a semi-hardcore raiding Guild filled with like-minded players determined to clear PvE content consistently in each tier and attain <span style="color:var(--gold);font-weight:700;">Cutting Edge</span> when the content is current. Players within the Guild have extensive experience in Cutting Edge &amp; Hardcore Raiding Environments.
+    </div>
+  </section>
+
+  <!-- What We're Building Section -->
+  <section class="section">
+    <div class="section-title">
+      <div class="section-title-line"></div>
+      <div class="section-title-text">What We&apos;re Building</div>
+    </div>
+    <div class="section-content">
+      At Broken Promises, we&apos;re building a guild that feels like a home for players who want to raid seriously but still enjoy the game. We&apos;re not just here for one tier, we&apos;re here for the long run. Our goal is to create a strong, stable group where everyone shows up, works together, and pushes to improve. We want players who care about killing bosses, learning fast, and helping each other. It&apos;s not just about being good, it&apos;s about being reliable, respectful, and part of a team that wants to get better every week.
+    </div>
+  </section>
+
+  <!-- Raiding Schedule Section -->
+  <section class="section">
+    <div class="section-title">
+      <div class="section-title-line"></div>
+      <div class="section-title-text">Raiding Schedule</div>
+    </div>
+    <div class="section-content">
+      Normal raiding schedule<br>
+      <span style="color:#aaa;font-size:0.98em;">(the below days are mandatory, however on progression/new tiers we do add an extra raid night to clear content and support progression)</span>
+      <div class="schedule-row">
+        <div class="schedule-card">
+          <div class="schedule-day">Wednesday</div>
+          <div class="schedule-time">19:00 ST – 22:00 ST</div>
+        </div>
+        <div class="schedule-card">
+          <div class="schedule-day">Sunday</div>
+          <div class="schedule-time">19:00 ST – 22:00 ST</div>
+        </div>
+        <div class="schedule-card">
+          <div class="schedule-day">Monday</div>
+          <div class="schedule-time">19:00 ST – 22:00 ST</div>
+          <div class="schedule-note">(first month mandatory of new tier only)</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Guild World Ranking Section -->
+  <section class="ranking-section">
+    <div class="ranking-title">Guild World Ranking</div>
+    <div class="ranking-grid">
+      <div class="ranking-card">
+        <img src="/images/tiers/nyalotha.jpg" alt="Ny'alotha" class="ranking-bg">
+        <div class="ranking-overlay"></div>
+        <div class="ranking-content">
+          <div class="ranking-raid">Ny&apos;alotha</div>
+          <div class="ranking-rank">World rank 2030</div>
+        </div>
+      </div>
+      <div class="ranking-card">
+        <img src="/images/tiers/aberrus.jpg" alt="Aberrus" class="ranking-bg">
+        <div class="ranking-overlay"></div>
+        <div class="ranking-content">
+          <div class="ranking-raid">Aberrus</div>
+          <div class="ranking-rank">World rank 1131</div>
+        </div>
+      </div>
+      <div class="ranking-card">
+        <img src="/images/tiers/amirdrassil.jpg" alt="Amirdrassil" class="ranking-bg">
+        <div class="ranking-overlay"></div>
+        <div class="ranking-content">
+          <div class="ranking-raid">Amirdrassil</div>
+          <div class="ranking-rank">World rank 605</div>
+        </div>
+      </div>
+      <div class="ranking-card">
+        <img src="/images/tiers/nerubar.jpg" alt="Nerub-ar Palace" class="ranking-bg">
+        <div class="ranking-overlay"></div>
+        <div class="ranking-content">
+          <div class="ranking-raid">Nerub-ar Palace</div>
+          <div class="ranking-rank">World rank 487</div>
+        </div>
+      </div>
+      <div class="ranking-card">
+        <img src="/images/tiers/undermine.jpg" alt="Liberation of Undermine" class="ranking-bg">
+        <div class="ranking-overlay"></div>
+        <div class="ranking-content">
+          <div class="ranking-raid">Liberation of Undermine</div>
+          <div class="ranking-rank">World rank 470</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- What We're Looking For Section -->
+  <section class="section">
+    <div class="section-title">
+      <div class="section-title-line"></div>
+      <div class="section-title-text">What We&apos;re Looking For</div>
+    </div>
+    <ul class="requirements-list">
+      <li class="requirements-item"><span class="requirements-icon">✔</span> You are above the age of 18, as we are a mature guild.</li>
+      <li class="requirements-item"><span class="requirements-icon">✔</span> You enjoy being in a friendly guild with a great raid atmosphere.</li>
+      <li class="requirements-item"><span class="requirements-icon">✔</span> You are a team player that puts the guild&apos;s best interest in front of your own.</li>
+      <li class="requirements-item"><span class="requirements-icon">✔</span> You are a quick learner and you always turn up prepared.</li>
+      <li class="requirements-item"><span class="requirements-icon">✔</span> You have a suitable computer allowing you to play the game without any interruptions/compatibility issues.</li>
+    </ul>
+  </section>
+
+  <!-- CTA Section -->
+  <section class="cta-section" id="apply">
+    <img src="/images/main.jpg" alt="Apply Background" class="cta-bg">
+    <div class="cta-overlay"></div>
+    <div class="cta-content">
+      <div class="cta-title">Interested in joining us?</div>
+      <a href="apply.html" target="_blank" onclick="window.open('apply.html','_blank');return false;"><button class="cta-btn">Apply Now</button></a>
+    </div>
+  </section>
+
+  <script>
+    function submitForm(e) {
+      e.preventDefault();
+      document.getElementById('apply-success').style.display = 'block';
+      e.target.reset();
+      return false;
+    }
+
+    window.addEventListener('scroll', function() {
+      const nav = document.querySelector('.nav');
+      if (window.scrollY > 10) {
+        nav.classList.add('scrolled');
+      } else {
+        nav.classList.remove('scrolled');
+      }
+    });
+
+    // Mobile menu toggle
+    const hamburger = document.querySelector('.hamburger');
+    const navLinks = document.querySelector('.nav-links');
+    
+    hamburger.addEventListener('click', () => {
+      hamburger.classList.toggle('active');
+      navLinks.classList.toggle('active');
+    });
+
+    // Close menu when clicking a link
+    document.querySelectorAll('.nav-links a').forEach(link => {
+      link.addEventListener('click', () => {
+        hamburger.classList.remove('active');
+        navLinks.classList.remove('active');
+      });
+    });
+  </script>
+</body>
+</html> 
